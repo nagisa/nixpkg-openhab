@@ -1,0 +1,80 @@
+<center>
+ <h1>A nix package for OpenHAB</h1>
+ <strong>No-frills, auto-updated high-quality package of OpenHAB for nix systems</strong>
+</center>
+
+Many of the attempts to integrate OpenHAB with nix attempt to also create a
+declaratively-configured NixOS module at the same time. While an admirable goal, this approach has
+resulted in none of these projects working out of the box. With this flake the aim is to provide
+the barebones foundational stone for annybody looking to run OpenHAB either manually, or to enable
+integration to their systems in whatever other manner.
+
+## Usage
+
+At the most basic level you can build the package like so:
+
+```console
+$ nix build github:nagisa/nixpkg-openhab
+```
+
+However, more likely you will want to integrate this into a larger flake of some sort (such as the
+one building your system that is going to run OpenHAB):
+
+```nix
+inputs = {
+    ...;
+    openhab.url = "github:nagisa/nixpkg-openhab";
+    openhab.inputs = {
+        # In case you alrady depend on `nixpkgs` in your flake, consider having `openhab`
+        # “follow” it:
+        nixpkgs.follows = "nixpkgs";
+        # Similarly, for flake-utils:
+        flake-utils.follows = "flake-utils";
+    };
+};
+```
+
+From there `openhab.packages` will contain a variety of packages, with `openhab` or its alias
+`default` being most interesting of them all. Among other things it also re-exports a copy of the
+`jdk` used for OpenHAB in case you need it for any reason.
+
+## Running OpenHAB
+
+Running OpenHAB as-is is not going to work, however. You will need to set-up a directory with some
+configuration and user data storage, as well as some environment variables pointing OpenHAB (or
+rather Apache Karaf) at this directory.
+
+In this example a basic openhab directory in current user’s home is created, however once you look
+at deploying a systemd service, this may get more complicated (though the general pattern will be
+similar…)
+
+```console
+$ mkdir -p ~/openhab/userdata/etc
+$ cp -rv $(nix build github:nagisa/nixpkg-openhab)/userdata/* ~/openhab/userdata
+$ cp -rv $(nix build github:nagisa/nixpkg-openhab)/conf ~/openhab/
+$ chmod -R +rw ~/openhab
+```
+
+Then, you can run OpenHAB with the appropriate environment variables.
+
+```console
+env OPENHAB_USERDATA="$HOME"/openhab/userdata/ \
+    OPENHAB_CONF="$HOME"/openhab/conf \
+    $(nix build github:nagisa/nixpkg-openhab)/start.sh
+```
+
+At this point you should see openhab successfully launching and you should be able to access the
+web UI in your browser at `localhost:8080`.
+
+## Maintenance
+
+This project is maintained automatically via GitHub Actions. It will periodically check the
+upstream [openhab/openhab-distro](https://github.com/openhab/openhab-distro) repository for new
+releases and update the flake definition and the hash for the repository of dependencies here to
+the most recent proper release. Due to the way maven works (and mvn2nix does not work) the hash of
+the repository can change as OpenHAB's dependencies are upgraded, even without any changes to
+OpenHAB, so if you do happen to encounter a hash mismatch, it might get resolved on the next run of
+the maintenance action.
+
+However, it is inevitable that things may break due to the upstream changes in the future. In that
+case, contributions and issues are welcome, of course.
