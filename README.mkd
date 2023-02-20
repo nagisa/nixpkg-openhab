@@ -22,7 +22,7 @@ one building your system that is going to run OpenHAB):
 
 ```nix
 inputs = {
-    ...;
+    # ...;
     openhab.url = "github:nagisa/nixpkg-openhab";
     openhab.inputs = {
         # In case you alrady depend on `nixpkgs` in your flake, consider having `openhab`
