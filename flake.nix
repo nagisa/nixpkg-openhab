@@ -3,7 +3,7 @@
         nixpkgs.url = "github:NixOS/nixpkgs";
         flake-utils.url = "github:numtide/flake-utils";
         openhab-distro = {
-            url = "github:openhab/openhab-distro";
+            url = "github:openhab/openhab-distro/3.4.2"; # OH-DISTRO-URL
             flake = false;
         };
     };
