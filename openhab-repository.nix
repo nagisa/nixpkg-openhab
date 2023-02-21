@@ -1,25 +1,16 @@
 # Downloads various dependencies for the openhab build.
-{ lib, stdenv, maven, openhab-distro }:
-stdenv.mkDerivation {
-    pname = "openhab-repository";
-    version = openhab-distro.shortRev;
-    nativeBuildInputs = [ maven ];
-    src = openhab-distro;
+{ lib, stdenv, maven, openhab-distro, fetchurl, linkFarm }:
 
-    buildPhase = ''
-        mvn -B -T 128 -Drelease -Dmaven.repo.local="$out" package
-    '';
-
-    installPhase = ''
-        # Delete all ephemeral files with lastModified timestamps inside
-        find "$out" -type f '(' \
-            -name '*.lastUpdated' -or \
-            -name 'resolver-status.properties' -or \
-            -name '_remote.repositories' ')' -delete
-    '';
-
-    dontFixup = true;
-    outputHashAlgo = "sha256";
-    outputHashMode = "recursive";
-    outputHash = builtins.readFile ./openhab-repository.sha256;
-}
+let
+    dependencies = (builtins.fromJSON (builtins.readFile ./mvn2nix-lock.json )).dependencies;
+    dependenciesAsDrv = (lib.forEach (lib.attrValues dependencies) (dependency: {
+        drv = fetchurl {
+            url = dependency.url;
+            sha256 = dependency.sha256;
+        };
+        layout = dependency.layout;
+    }));
+in linkFarm "openhab-repository" (lib.forEach dependenciesAsDrv (dependency: {
+    name = dependency.layout;
+    path = dependency.drv;
+}))
