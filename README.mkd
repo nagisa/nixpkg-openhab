@@ -1,7 +1,7 @@
-<center>
- <h1>A nix package for OpenHAB</h1>
- <strong>No-frills, auto-updated high-quality package of OpenHAB for nix systems</strong>
-</center>
+<div align="center">
+    <h1>A nix package for OpenHAB</h1>
+    <strong>No-frills, auto-updated high-quality package of OpenHAB for nix systems.</strong>
+</div>
 
 Many of the attempts to integrate OpenHAB with nix attempt to also create a
 declaratively-configured NixOS module at the same time. While an admirable goal, this approach has
