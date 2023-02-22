@@ -9,12 +9,15 @@
  stdenv,
 }:
 
-stdenv.mkDerivation rec {
-    pname = "openhab";
+let
     version = builtins.readFile ./version;
+    sha256 = builtins.readFile ./openhab.sha256;
+in stdenv.mkDerivation rec {
+    inherit version;
+    pname = "openhab";
     src = fetchurl {
         url = "https://github.com/openhab/openhab-distro/releases/download/${version}/openhab-${version}.tar.gz";
-        sha256 = builtins.readFile ./sha256;
+        inherit sha256;
     };
     nativeBuildInputs = [ makeWrapper ];
     buildInputs = [ bash ];
