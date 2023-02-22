@@ -1,23 +1,24 @@
 {
- gawk,
  bash,
  coreutils,
+ fetchurl,
+ gawk,
  jdk-openhab,
- makeWrapper,
  lib,
- maven,
- openhab-distro,
- openhab-repository,
+ makeWrapper,
  stdenv,
 }:
 
 stdenv.mkDerivation rec {
     pname = "openhab";
-    version = openhab-distro.shortRev;
-    src = openhab-distro;
-    nativeBuildInputs = [ makeWrapper maven ];
+    version = builtins.readFile ./version;
+    src = fetchurl {
+        url = "https://github.com/openhab/openhab-distro/releases/download/${version}/openhab-${version}.tar.gz";
+        sha256 = builtins.readFile ./sha256;
+    };
+    nativeBuildInputs = [ makeWrapper ];
     buildInputs = [ bash ];
-    outputs = [ "out" "demo" ];
+    outputs = [ "out" ];
     extraPath = lib.makeBinPath [ jdk-openhab gawk coreutils ];
     wrappedExecutables = [
         "start.sh"
@@ -35,25 +36,15 @@ stdenv.mkDerivation rec {
         "runtime/bin/update"
     ];
 
-    buildPhase = ''
-        runHook preBuild
-
-        echo "Using repository ${openhab-repository}"
-        cp -r ${openhab-repository} ./repository
-        chmod -R +rw ./repository
-        mvn --offline -B -T $NIX_BUILD_CORES -Drelease -Dmaven.repo.local=./repository package
-
-        runHook postBuild
+    unpackPhase = ''
+        runHook preUnpack
+        mkdir -p $out
+        tar -C $out -xf $src
+        runHook postUnpack
     '';
 
     installPhase = ''
         runHook preInstall
-        mkdir $out
-        tar -C $out -xf distributions/openhab/target/openhab-3.4.2.tar.gz
-        mv distributions/openhab-addons/target/openhab-addons-3.4.2.kar $out/addons/
-        mkdir $demo
-        tar -C $demo -xf distributions/openhab-demo/target/openhab-demo-3.4.2.tar.gz
-
         rm -rfv \
             "$out/"*.bat \
             "$out/runtime/bin/"*.bat \

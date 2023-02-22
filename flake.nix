@@ -2,24 +2,15 @@
     inputs = {
         nixpkgs.url = "github:NixOS/nixpkgs";
         flake-utils.url = "github:numtide/flake-utils";
-        openhab-distro = {
-            url = "github:openhab/openhab-distro/3.4.2"; # OH-DISTRO-URL
-            flake = false;
-        };
     };
 
-    outputs = { flake-utils, nixpkgs, openhab-distro, ... }: flake-utils.lib.eachDefaultSystem (system: {
+    outputs = { flake-utils, nixpkgs, ... }: flake-utils.lib.eachDefaultSystem (system: {
         packages = rec {
             jdk-openhab = nixpkgs.legacyPackages.${system}.jdk11;
-            maven-openhab = nixpkgs.legacyPackages.${system}.maven.override { jdk = jdk-openhab; };
-            openhab-repository = nixpkgs.legacyPackages.${system}.callPackage ./openhab-repository.nix {
-                inherit openhab-distro;
-                maven = maven-openhab;
-            };
             openhab = nixpkgs.legacyPackages.${system}.callPackage ./openhab.nix {
-                inherit openhab-distro openhab-repository jdk-openhab;
-                maven = maven-openhab;
+                inherit jdk-openhab;
             };
+            openhab-addons = nixpkgs.legacyPackages.${system}.callPackage ./openhab-addons.nix {};
             default = openhab;
         };
     });
