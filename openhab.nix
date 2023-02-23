@@ -6,6 +6,7 @@
  jdk-openhab,
  lib,
  makeWrapper,
+ procps,
  stdenv,
 }:
 
@@ -22,7 +23,7 @@ in stdenv.mkDerivation rec {
     nativeBuildInputs = [ makeWrapper ];
     buildInputs = [ bash ];
     outputs = [ "out" ];
-    extraPath = lib.makeBinPath [ jdk-openhab gawk coreutils ];
+    extraPath = lib.makeBinPath [ jdk-openhab gawk coreutils procps ];
     wrappedExecutables = [
         "start.sh"
         "start_debug.sh"
