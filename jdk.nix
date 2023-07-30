@@ -1,8 +1,8 @@
-{ buildPlatform, hostPlatform, jdk11, which, zip, buildPackages }:
+{ buildPlatform, hostPlatform, jdk17, which, zip, buildPackages }:
 
 if buildPlatform == hostPlatform
-then jdk11
-else (jdk11.override {
+then jdk17
+else (jdk17.override {
     # libIDL does not compile in cross-compile scenarios.
     enableGnome2 = false;
 }).overrideAttrs (old: {
