@@ -18,3 +18,12 @@ curl -L https://github.com/openhab/openhab-distro/releases/download/"$MOST_RECEN
     | cut -d" " -f1 \
     | tr -d '\n' \
     > openhab-addons.sha256
+
+if ! git diff --quiet "version"; then
+    if [[ -v GITHUB_OUTPUT ]]; then
+        echo "version=$MOST_RECENT" >> $GITHUB_OUTPUT
+        echo "changed=true" >> $GITHUB_OUTPUT
+    fi
+else
+    exit 0
+fi
