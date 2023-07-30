@@ -19,11 +19,17 @@ curl -L https://github.com/openhab/openhab-distro/releases/download/"$MOST_RECEN
     | tr -d '\n' \
     > openhab-addons.sha256
 
-if ! git diff --quiet "version"; then
-    if [[ -v GITHUB_OUTPUT ]]; then
-        echo "version=$MOST_RECENT" >> $GITHUB_OUTPUT
-        echo "changed=true" >> $GITHUB_OUTPUT
-    fi
-else
+if git diff --quiet "version"; then
     exit 0
 fi
+
+if [[ -v GITHUB_OUTPUT ]]; then
+    echo "version=$MOST_RECENT" >> $GITHUB_OUTPUT
+    echo "changed=true" >> $GITHUB_OUTPUT
+fi
+
+# Make a commit that we'll PR
+NAME=nixpkg-openhab-auto-update[bot]
+MAIL="GitHub <noreply@github.com>"
+git add version openhab.sha256 openhab-addons.sha256
+git -c user.name="$NAME" -c user.email="$MAIL" commit -m "openhab: ? -> $MOST_RECENT"
