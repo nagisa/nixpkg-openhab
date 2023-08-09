@@ -13,6 +13,6 @@ else (jdk17.override {
     configureFlags = old.configureFlags ++ [
         "--with-jtreg=no"
         "--disable-hotspot-gtest"
-        "--with-build-jdk=${buildPackages.jdk11}"
+        "--with-build-jdk=${buildPackages.jdk17}"
     ];
 })
