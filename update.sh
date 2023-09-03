@@ -2,6 +2,7 @@
 #!nix-shell -i bash -p curl jq ripgrep gawk
 
 set -eux
+set -o pipefail
 
 readarray -t RELEASES <<<"$(curl https://api.github.com/repos/openhab/openhab-distro/tags | jq -r '.[].name' | rg '^\d+\.\d+\.\d+*$')"
 MOST_RECENT=${RELEASES[0]}
