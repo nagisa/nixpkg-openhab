@@ -7,6 +7,17 @@ set -o pipefail
 readarray -t RELEASES <<<"$(curl https://api.github.com/repos/openhab/openhab-distro/tags | jq -r '.[].name' | rg '^\d+\.\d+\.\d+*$')"
 MOST_RECENT=${RELEASES[0]}
 
+# Sometimes GitHub returns a response containing something unusual, and although `jq` fails with
+# the error:
+#
+#   jq: error (at <stdin>:1): Cannot index string with string "name"
+#
+# the processing does not stop despite `pipefail`. In those instances `$MOST_RECENT` ends up empty,
+# so lets just bail when that happens.
+if [[ -z "$MOST_RECENT" ]]; then
+    exit 1
+fi
+
 echo -n "$MOST_RECENT" > version
 curl -L https://github.com/openhab/openhab-distro/releases/download/"$MOST_RECENT"/openhab-"$MOST_RECENT".tar.gz \
     | sha256sum \
