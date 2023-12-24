@@ -7,6 +7,8 @@
  lib,
  makeWrapper,
  procps,
+ zip,
+ unzip,
  stdenv,
 }:
 
@@ -23,7 +25,7 @@ in stdenv.mkDerivation rec {
     nativeBuildInputs = [ makeWrapper ];
     buildInputs = [ bash ];
     outputs = [ "out" ];
-    extraPath = lib.makeBinPath [ jdk-openhab gawk coreutils procps ];
+    extraPath = lib.makeBinPath [ jdk-openhab gawk coreutils procps zip unzip ];
     wrappedExecutables = [
         "start.sh"
         "start_debug.sh"
@@ -53,12 +55,15 @@ in stdenv.mkDerivation rec {
             "$out/"*.bat \
             "$out/runtime/bin/"*.bat \
             "$out/runtime/bin/"*.ps1 \
-            "$out/runtime/bin/"*.psm1 \
-            "$out/runtime/bin/"*.lst
+            "$out/runtime/bin/"*.psm1
 
         for exe in $wrappedExecutables; do
-            echo "Wrapping $exe…"
-            wrapProgram $out/$exe --prefix PATH ':' $extraPath
+        echo "Rewriting $exe…"
+        cat - $out/$exe > "$out/$exe".new << EOF
+        #!${bash}/bin/sh
+        export PATH="\''$PATH:$extraPath"
+        EOF
+        mv "$out/$exe".new "$out/$exe"
         done
 
         runHook postInstall
